@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100 Day Master Plan — Pranjeet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #fff; color: #111; font-size: 14px; line-height: 1.6; }
+
+  .top-bar { background: #111; color: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .top-bar h1 { font-size: 15px; font-weight: bold; letter-spacing: .04em; }
+  .top-bar .meta { font-size: 12px; color: #999; }
+  .top-bar .counter { font-size: 13px; color: #4ade80; font-weight: bold; }
+
+  .progress-strip { background: #f0f0f0; height: 4px; }
+  .progress-fill { background: #16a34a; height: 4px; transition: width .4s; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+
+  .phase-block { margin-bottom: 48px; }
+  .phase-label { font-size: 11px; font-weight: bold; letter-spacing: .1em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+  .phase-title { font-size: 18px; font-weight: bold; color: #111; border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 20px; }
+
+  .topic-block { margin-bottom: 2px; border: 1px solid #e5e5e5; border-radius: 4px; overflow: hidden; }
+  .topic-block.done { border-color: #16a34a; }
+
+  .topic-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; background: #fff; }
+  .topic-row:hover { background: #fafafa; }
+  .topic-block.done .topic-row { background: #f0fdf4; }
+
+  .tick-btn { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
+  .tick-btn:hover { border-color: #16a34a; }
+  .topic-block.done .tick-btn { background: #16a34a; border-color: #16a34a; }
+  .tick-icon { display: none; color: #fff; font-size: 12px; font-weight: bold; }
+  .topic-block.done .tick-icon { display: block; }
+
+  .topic-info { flex: 1; min-width: 0; }
+  .topic-days { font-size: 11px; color: #999; margin-bottom: 2px; }
+  .topic-name { font-size: 14px; font-weight: bold; color: #111; }
+  .topic-block.done .topic-name { color: #16a34a; text-decoration: line-through; text-decoration-color: #86efac; }
+  .topic-sub { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .expand-arrow { font-size: 12px; color: #999; margin-top: 3px; transition: transform .2s; flex-shrink: 0; }
+  .topic-block.open .expand-arrow { transform: rotate(180deg); }
+
+  .topic-detail { display: none; border-top: 1px solid #e5e5e5; }
+  .topic-block.open .topic-detail { display: block; }
+  .topic-block.done .topic-detail { border-top-color: #bbf7d0; }
+
+  .checklist { padding: 14px 16px 0; }
+  .checklist-title { font-size: 11px; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; color: #999; margin-bottom: 8px; }
+  .checklist ul { list-style: none; }
+  .checklist ul li { font-size: 13px; color: #333; padding: 3px 0 3px 16px; position: relative; }
+  .checklist ul li::before { content: "—"; position: absolute; left: 0; color: #ccc; }
+
+  .notes-area { padding: 14px 16px; }
+  .notes-label { font-size: 11px; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+  .notes-box { background: #111; color: #f0fdf4; font-family: 'Courier New', monospace; font-size: 12px; width: 100%; min-height: 80px; padding: 10px 12px; border: none; border-radius: 3px; resize: vertical; outline: none; line-height: 1.6; }
+  .notes-box::placeholder { color: #555; }
+
+  .code-area { padding: 0 16px 14px; }
+  .code-label { font-size: 11px; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+  .code-box { background: #0f0f0f; color: #4ade80; font-family: 'Courier New', monospace; font-size: 12px; width: 100%; min-height: 120px; padding: 10px 12px; border: none; border-radius: 3px; resize: vertical; outline: none; line-height: 1.6; }
+  .code-box::placeholder { color: #333; }
+
+  .save-row { padding: 0 16px 12px; display: flex; justify-content: flex-end; }
+  .save-btn { background: #111; color: #fff; border: none; font-family: 'Courier New', monospace; font-size: 12px; padding: 6px 16px; border-radius: 3px; cursor: pointer; letter-spacing: .04em; }
+  .save-btn:hover { background: #16a34a; }
+  .save-btn.saved { background: #16a34a; }
+
+  .track-tag { display: inline-block; font-size: 10px; font-weight: bold; padding: 1px 7px; border-radius: 2px; margin-right: 4px; letter-spacing: .05em; text-transform: uppercase; }
+  .tag-py  { background: #ede9fe; color: #5b21b6; }
+  .tag-dsa { background: #dcfce7; color: #166534; }
+  .tag-sql { background: #fef9c3; color: #713f12; }
+  .tag-ai  { background: #fff7ed; color: #9a3412; }
+  .tag-proj{ background: #eff6ff; color: #1e40af; }
+
+  footer { text-align: center; padding: 40px 24px; font-size: 12px; color: #bbb; border-top: 1px solid #f0f0f0; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <div class="top-bar h1" style="font-size:15px;font-weight:bold;letter-spacing:.04em">100 Day Master Plan</div>
+    <div class="meta">Pranjeet Singh Panwar · Jun 18 → Sep 26, 2026</div>
+  </div>
+  <div class="counter"><span id="done-count">0</span> / <span id="total-count">0</span> done</div>
+</div>
+<div class="progress-strip"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+<div class="container" id="app"></div>
+
+<footer>Progress saves automatically in your browser. Come back anytime — it will be here.</footer>
+
+<script>
+const DATA = [
+  {
+    phase: "Phase 1 — Foundation", days: "Days 1–45",
+    topics: [
+      { id:"p1_oop", days:"Days 1–3", name:"OOP Complete", tags:["py"],
+        sub:"Encapsulation · Inheritance · Polymorphism · Abstraction · Dunder methods · Mixins · Dataclasses",
+        checklist:["@property, getters/setters, private variables","Inheritance & super(), method overriding, MRO","Polymorphism — same method name, different behavior","ABC, @abstractmethod — enforce contracts","Dunder methods: __str__, __repr__, __eq__, __len__, __call__","Multiple inheritance & MRO, diamond problem","Composition vs Inheritance — when to use which","@dataclass, field(), __post_init__","Mixins — reusable behavior without full inheritance"],
+        note_ph:"What's still unclear? Which concept needs another pass?",
+        code_ph:"# Write all 9 OOP concepts from scratch here\nclass Animal:\n    ..."
+      },
+      { id:"p1_dec", days:"Day 4", name:"Decorators", tags:["py"],
+        sub:"@decorator syntax · functools.wraps · chaining · class decorators",
+        checklist:["Function decorators — wrapper pattern","functools.wraps — preserve function metadata","Chaining decorators — order matters","Class decorators — decorate entire classes","FastAPI is built on decorators — this must be perfect"],
+        note_ph:"Which decorator pattern tripped you up?",
+        code_ph:"# Write a decorator from scratch\ndef my_decorator(func):\n    ..."
+      },
+      { id:"p1_gen", days:"Day 5", name:"Generators & yield", tags:["py"],
+        sub:"yield · generator functions · yield from · generator expressions",
+        checklist:["yield keyword — pauses and resumes execution","Generator functions vs regular functions","yield from — delegation","Generator expressions: (x for x in ...)","Real use case — streaming LLM responses with yield"],
+        note_ph:"",
+        code_ph:"# Generator that streams data\ndef stream_data(items):\n    ..."
+      },
+      { id:"p1_ctx", days:"Day 6", name:"Context Managers", tags:["py"],
+        sub:"with statement · __enter__ / __exit__ · @contextmanager",
+        checklist:["with statement — automatic resource management","__enter__ and __exit__ protocol","@contextmanager decorator — simpler syntax","Real use: DB sessions, file handling, API connections"],
+        note_ph:"",
+        code_ph:"# Context manager using class and @contextmanager\n"
+      },
+      { id:"p1_typ", days:"Day 7", name:"Type Hints", tags:["py"],
+        sub:"Basic · Optional · Union · Generic · TypeVar · Literal · Annotated",
+        checklist:["Basic: int, str, float, bool, None, list, dict, tuple","Optional[T] — value can be None","Union[A, B] — one of multiple types","Generic + TypeVar — reusable typed functions","Literal — restrict to specific values","Annotated — add metadata to types","FastAPI uses type hints for validation + docs — cannot skip"],
+        note_ph:"",
+        code_ph:"from typing import Optional, Union, TypeVar, Generic\n"
+      },
+      { id:"p1_async", days:"Days 8–9", name:"Async / Await + asyncio", tags:["py"],
+        sub:"async def · await · event loop · gather · create_task · async for/with",
+        checklist:["async def — define a coroutine","await — pause until result ready","Event loop — how async Python actually works","asyncio.gather() — run multiple coroutines concurrently","asyncio.create_task() — schedule without waiting","asyncio.sleep() — non-blocking delay","async for, async with — async iteration and context","FastAPI is async-first — spend 2 full days here"],
+        note_ph:"Spend 2 days. Note what confused you.",
+        code_ph:"import asyncio\n\nasync def main():\n    ..."
+      },
+      { id:"p1_http", days:"Day 10", name:"httpx + aiohttp", tags:["py"],
+        sub:"AsyncClient · connection pooling · timeouts · retries",
+        checklist:["httpx — async HTTP client (preferred over requests in FastAPI)","AsyncClient — connection pooling, timeouts, retries","aiohttp — skim only"],
+        note_ph:"",
+        code_ph:"import httpx\n\nasync def fetch(url: str):\n    async with httpx.AsyncClient() as client:\n        ..."
+      },
+      { id:"p1_thread", days:"Day 11", name:"Threading + Multiprocessing + GIL", tags:["py"],
+        sub:"threading.Thread · GIL · multiprocessing · IO-bound vs CPU-bound",
+        checklist:["threading.Thread — run code in parallel threads","GIL — Global Interpreter Lock, why Python threading is limited","multiprocessing — bypass GIL for CPU-bound tasks","When to use which: IO-bound vs CPU-bound"],
+        note_ph:"Concept level only — you'll use async for IO and Celery for jobs.",
+        code_ph:"import threading\nimport multiprocessing\n"
+      },
+      { id:"p1_pytest", days:"Day 12", name:"pytest", tags:["py"],
+        sub:"test_ naming · assert · fixtures · parametrize · marks",
+        checklist:["test_ naming convention — how pytest discovers tests","assert statements — testing outcomes","fixtures — @pytest.fixture, conftest.py","parametrize — run same test with different inputs","marks — skip, xfail, custom marks"],
+        note_ph:"",
+        code_ph:"import pytest\n\n@pytest.fixture\ndef client():\n    ..."
+      },
+      { id:"p1_mock", days:"Day 13", name:"pytest-asyncio + mocking + coverage", tags:["py"],
+        sub:"async tests · mock.patch · MagicMock · pytest-cov",
+        checklist:["@pytest.mark.asyncio — test async functions","unittest.mock.patch — replace real functions in tests","MagicMock — create fake objects","pytest-cov — measure test coverage (target 80%+)"],
+        note_ph:"",
+        code_ph:"from unittest.mock import patch, MagicMock\n"
+      },
+      { id:"p1_func", days:"Day 14", name:"Lambda + map/filter/reduce + functools", tags:["py"],
+        sub:"lambda · map · filter · reduce · partial · lru_cache · wraps",
+        checklist:["lambda — anonymous one-line functions","map(func, iterable)","filter(func, iterable)","reduce(func, iterable) — fold to single value","functools.partial — pre-fill arguments","functools.lru_cache — memoization decorator","functools.wraps — preserve metadata"],
+        note_ph:"",
+        code_ph:"from functools import reduce, partial, lru_cache\n"
+      },
+      { id:"p1_iter", days:"Day 15", name:"itertools + collections", tags:["py"],
+        sub:"chain · product · groupby · defaultdict · Counter · OrderedDict · namedtuple",
+        checklist:["itertools.chain — combine iterables","itertools.product — cartesian product","itertools.groupby — group consecutive items","collections.defaultdict","collections.Counter","collections.OrderedDict","collections.namedtuple"],
+        note_ph:"",
+        code_ph:"from itertools import chain, product, groupby\nfrom collections import defaultdict, Counter\n"
+      },
+      { id:"p1_unpack", days:"Day 16", name:"Unpacking + walrus + match", tags:["py"],
+        sub:"* unpacking · ** dict spread · walrus := · match statement",
+        checklist:["* unpacking — spread iterables","** unpacking — spread dicts","Walrus := — assign and use in one expression","match statement — structural pattern matching (Python 3.10+)"],
+        note_ph:"",
+        code_ph:"# walrus operator\nif (n := len(data)) > 10:\n    print(n)\n\n# match\nmatch command:\n    case 'quit': ..."
+      },
+      { id:"p1_str", days:"Day 17", name:"Strings + f-strings + regex", tags:["py"],
+        sub:"string methods · f-string expressions · re module · common patterns",
+        checklist:["String methods: split, join, strip, replace, find, format","f-strings advanced — expressions, formatting, nested","re module — search, match, findall, sub, compile","Common patterns — email, URL, phone validation"],
+        note_ph:"You'll use regex heavily for transcript processing in the project.",
+        code_ph:"import re\n\npattern = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}')\n"
+      },
+      { id:"p1_dt", days:"Day 18", name:"datetime + os + sys + pathlib", tags:["py"],
+        sub:"datetime · timedelta · os.environ · pathlib.Path",
+        checklist:["datetime — now(), timedelta, formatting, parsing","os — environ, path, makedirs, listdir","sys — argv, path, exit","pathlib.Path — modern file path handling"],
+        note_ph:"",
+        code_ph:"from pathlib import Path\nfrom datetime import datetime, timedelta\n"
+      },
+      { id:"p1_json", days:"Day 19", name:"json + csv + operator module", tags:["py"],
+        sub:"json loads/dumps · csv DictReader/Writer · itemgetter · attrgetter",
+        checklist:["json — loads, dumps, indent, ensure_ascii, custom encoders","csv — reader, writer, DictReader, DictWriter","operator module — itemgetter, attrgetter, methodcaller"],
+        note_ph:"",
+        code_ph:"import json, csv\nfrom operator import itemgetter\n"
+      },
+      { id:"p1_env", days:"Day 20", name:"venv + pip + logging + tooling", tags:["py"],
+        sub:"venv · pip · pyproject.toml · Poetry · logging module",
+        checklist:["venv — create, activate, deactivate","pip — install, freeze, requirements.txt","pyproject.toml — modern Python project config","Poetry — dependency management","logging module — levels, handlers, formatters, structured logs"],
+        note_ph:"",
+        code_ph:"import logging\nlogging.basicConfig(level=logging.INFO)\nlogger = logging.getLogger(__name__)\n"
+      },
+      { id:"p1_meta", days:"Day 21", name:"Advanced Python concepts", tags:["py"],
+        sub:"Metaclasses · Descriptors · __slots__ · memory management · cProfile",
+        checklist:["Metaclasses — class of a class, __new__, __init__","Descriptors — __get__, __set__, __delete__","__slots__ — memory optimization","Memory management — reference counting, garbage collection","cProfile — profiling Python code"],
+        note_ph:"Concept level only — interviews ask about these.",
+        code_ph:"# Metaclass example\nclass Meta(type):\n    def __new__(mcs, name, bases, namespace):\n        ..."
+      },
+      { id:"p1_pyd", days:"Days 22–23", name:"Pydantic v2", tags:["py"],
+        sub:"BaseModel · Field() · validators · serialization · nested models",
+        checklist:["BaseModel — define data shapes","Field() — defaults, validation, aliases, descriptions","@field_validator, @model_validator","model_dump(), model_dump_json()","model_config — strict mode, extra fields","Nested models — relationships between models","Foundation of FastAPI — go deep, 2 days"],
+        note_ph:"Spend 2 days. Pydantic v2 is the foundation of FastAPI.",
+        code_ph:"from pydantic import BaseModel, Field, field_validator\n\nclass User(BaseModel):\n    name: str\n    email: str\n    age: int = Field(gt=0)\n"
+      },
+      { id:"p1_settings", days:"Day 24", name:"python-dotenv + BaseSettings", tags:["py"],
+        sub:"dotenv · Pydantic BaseSettings · dev/staging/prod · secrets",
+        checklist:["python-dotenv — load .env files","Pydantic BaseSettings — typed config from environment","Environment separation — dev, staging, production","Secrets management — never hardcode, always env vars"],
+        note_ph:"",
+        code_ph:"from pydantic_settings import BaseSettings\n\nclass Settings(BaseSettings):\n    database_url: str\n    secret_key: str\n    class Config:\n        env_file = '.env'\n"
+      },
+      { id:"p1_auth_f", days:"Day 25", name:"JWT + passlib + bcrypt", tags:["py"],
+        sub:"python-jose · access/refresh tokens · passlib.CryptContext · bcrypt",
+        checklist:["python-jose — JWT encode, decode, verify","Access tokens + refresh tokens — structure and expiry","passlib.CryptContext — password hashing context","bcrypt — verify passwords safely"],
+        note_ph:"",
+        code_ph:"from jose import jwt\nfrom passlib.context import CryptContext\n\npwd_context = CryptContext(schemes=['bcrypt'])\n"
+      },
+      { id:"p1_sqla", days:"Days 26–27", name:"SQLAlchemy 2.x async", tags:["py"],
+        sub:"AsyncSession · mapped_column · relationships · CRUD · connection pooling",
+        checklist:["Async engine + AsyncSession — setup for FastAPI","Base + mapped_column — define models","Relationships — one-to-many, many-to-many","Queries — select, where, join, order_by, limit","CRUD patterns","Connection pooling — pool_size, max_overflow","SQLAlchemy 2.x syntax is very different from 1.x — focus on 2.x only"],
+        note_ph:"Many online tutorials are outdated (1.x). Note 2.x gotchas here.",
+        code_ph:"from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine\nfrom sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped\n"
+      },
+      { id:"p1_alembic", days:"Day 28", name:"Alembic migrations", tags:["py"],
+        sub:"alembic init · autogenerate · upgrade head · downgrade · best practices",
+        checklist:["alembic init — setup migration environment","alembic revision --autogenerate — detect model changes","alembic upgrade head — apply migrations","alembic downgrade — rollback migrations","Never edit already-applied migrations"],
+        note_ph:"",
+        code_ph:"# alembic.ini and env.py setup notes\n# alembic revision --autogenerate -m 'create users table'\n# alembic upgrade head\n"
+      },
+      { id:"p1_fapi", days:"Days 29–30", name:"FastAPI core — routing + request/response", tags:["py"],
+        sub:"path operations · path/query params · response_model · APIRouter",
+        checklist:["@app.get, @app.post, @app.put, @app.delete","Path parameters, query parameters, request body","Response models — response_model, status_code","APIRouter — modular code","Tags, prefix, dependencies on router level"],
+        note_ph:"",
+        code_ph:"from fastapi import FastAPI, APIRouter\n\napp = FastAPI()\nrouter = APIRouter(prefix='/users', tags=['users'])\n\n@router.get('/{user_id}')\nasync def get_user(user_id: int):\n    ...\n"
+      },
+      { id:"p1_di", days:"Day 31", name:"FastAPI dependency injection", tags:["py"],
+        sub:"Depends() · get_db() · get_current_user() · nested dependencies",
+        checklist:["Depends() — inject reusable logic into routes","Database session dependency — get_db()","Current user dependency — get_current_user()","Nested dependencies — dependencies that have dependencies","Most powerful and most underused FastAPI feature — master it"],
+        note_ph:"This is the most important FastAPI concept. Note patterns here.",
+        code_ph:"from fastapi import Depends\nfrom sqlalchemy.ext.asyncio import AsyncSession\n\nasync def get_db() -> AsyncSession:\n    async with SessionLocal() as session:\n        yield session\n"
+      },
+      { id:"p1_mid", days:"Day 32", name:"FastAPI middleware + CORS + error handling", tags:["py"],
+        sub:"middleware · CORSMiddleware · HTTPException · exception_handler · custom exceptions",
+        checklist:["Middleware — intercept every request/response","CORSMiddleware — allow_origins, allow_methods","HTTPException — raise with status_code and detail","@app.exception_handler — global error handling","Custom exception classes + handlers"],
+        note_ph:"",
+        code_ph:"from fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp.add_middleware(CORSMiddleware, allow_origins=['*'])\n"
+      },
+      { id:"p1_bg", days:"Day 33", name:"FastAPI background tasks + WebSockets + uploads", tags:["py"],
+        sub:"BackgroundTasks · WebSocket · UploadFile · file streaming",
+        checklist:["BackgroundTasks — run after response is sent","WebSocket — ws:// connections, send/receive","UploadFile — handle multipart file uploads","File streaming — process large files efficiently"],
+        note_ph:"",
+        code_ph:"from fastapi import BackgroundTasks, WebSocket, UploadFile\n"
+      },
+      { id:"p1_crud", days:"Days 34–35", name:"FastAPI + PostgreSQL full CRUD", tags:["py"],
+        sub:"Supabase PostgreSQL · pagination · filters · DB error handling",
+        checklist:["Connect FastAPI to Supabase PostgreSQL async","Build complete CRUD for one resource","Pagination — cursor-based and offset-based","Filters + search on database level","Proper error handling for DB failures","Build a small working API — actually run it"],
+        note_ph:"Build it, don't just read docs.",
+        code_ph:"# Full CRUD example\n@router.post('/', response_model=UserOut)\nasync def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):\n    ..."
+      },
+      { id:"p1_redis", days:"Day 36", name:"FastAPI + Redis caching", tags:["py"],
+        sub:"Upstash Redis · cache-aside · TTL · rate limiting",
+        checklist:["Upstash Redis — connect from FastAPI","Cache-aside pattern — check cache, miss → DB, store → cache","TTL strategy — when to expire cached data","Rate limiting with Redis — per user, per IP"],
+        note_ph:"",
+        code_ph:"import redis.asyncio as redis\n\nr = redis.from_url('redis://...')\nawait r.set('key', 'value', ex=3600)\n"
+      },
+      { id:"p1_jwt", days:"Day 37", name:"FastAPI + JWT auth full flow", tags:["py"],
+        sub:"register · login · protected routes · refresh token · logout",
+        checklist:["Register endpoint — hash password, store user","Login endpoint — verify password, return tokens","Protected routes — validate JWT in Depends()","Refresh token endpoint — issue new access token","Logout — invalidate token in Redis"],
+        note_ph:"",
+        code_ph:"@router.post('/login')\nasync def login(data: LoginSchema, db: AsyncSession = Depends(get_db)):\n    user = await get_user_by_email(db, data.email)\n    if not verify_password(data.password, user.hashed_password):\n        raise HTTPException(401)\n    return {'access_token': create_access_token(user.id)}\n"
+      },
+      { id:"p1_celery", days:"Day 38", name:"FastAPI + Celery + Redis task queue", tags:["py"],
+        sub:"Celery setup · @celery.task · delay() · task states · Flower",
+        checklist:["Celery setup — broker (Redis), backend (Redis)","@celery.task — define background tasks","delay() — send task to queue","Task states — PENDING, STARTED, SUCCESS, FAILURE","Monitor — Flower dashboard"],
+        note_ph:"",
+        code_ph:"from celery import Celery\n\ncelery_app = Celery('tasks', broker='redis://localhost:6379/0')\n\n@celery_app.task\ndef process_video(video_id: str):\n    ...\n"
+      },
+      { id:"p1_struct", days:"Day 39", name:"Python project structure", tags:["py"],
+        sub:"src/ layout · routers · models · schemas · services · repositories · tests",
+        checklist:["src/ layout vs flat layout","app/routers/ — route handlers by domain","app/models/ — SQLAlchemy models","app/schemas/ — Pydantic models","app/services/ — business logic","app/repositories/ — database queries","tests/ — mirrors app/ structure","alembic/ — database migrations"],
+        note_ph:"",
+        code_ph:"# Project structure\n# app/\n#   routers/\n#   models/\n#   schemas/\n#   services/\n#   repositories/\n# tests/\n# alembic/\n"
+      },
+      { id:"p1_docker", days:"Days 40–41", name:"Docker + docker-compose", tags:["py"],
+        sub:"Dockerfile · docker build/run · docker-compose · FastAPI + PG + Redis",
+        checklist:["What is Docker — containers vs VMs","Dockerfile — FROM, WORKDIR, COPY, RUN, CMD","Build + run image — docker build, docker run","docker-compose.yml — multi-container setup","FastAPI + PostgreSQL + Redis in docker-compose",".dockerignore — keep images lean"],
+        note_ph:"",
+        code_ph:"# Dockerfile\nFROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD ['uvicorn', 'app.main:app', '--host', '0.0.0.0']\n"
+      },
+      { id:"p1_cicd", days:"Day 42", name:"GitHub Actions + AWS basics", tags:["py"],
+        sub:"workflows · CI pipeline · CD pipeline · EC2 · S3 · RDS",
+        checklist:["GitHub Actions — workflows, jobs, steps, triggers","CI pipeline — test on every push","CD pipeline — deploy on merge to main","AWS EC2 — virtual server, SSH, deploy FastAPI","AWS S3 — file storage, presigned URLs","AWS RDS — managed PostgreSQL"],
+        note_ph:"",
+        code_ph:"# .github/workflows/ci.yml\n# name: CI\n# on: [push]\n# jobs:\n#   test:\n#     runs-on: ubuntu-latest\n#     steps:\n#       - uses: actions/checkout@v3\n#       - run: pip install -r requirements.txt\n#       - run: pytest\n"
+      },
+      { id:"p1_log", days:"Day 43", name:"Structured logging + monitoring + health checks", tags:["py"],
+        sub:"structlog · JSON logs · request ID · /health endpoint · Sentry",
+        checklist:["structlog or python-json-logger — JSON structured logs","Log levels — DEBUG, INFO, WARNING, ERROR, CRITICAL","Request ID — trace requests across services","/health endpoint — check DB, Redis, queue status","Sentry — error tracking in production"],
+        note_ph:"",
+        code_ph:"import structlog\nlogger = structlog.get_logger()\nlogger.info('user_created', user_id=user.id, email=user.email)\n"
+      },
+      { id:"p1_lc", days:"Day 44", name:"LangChain basics + chains + prompts + memory", tags:["py","ai"],
+        sub:"LLM · PromptTemplate · LLMChain · ConversationBufferMemory · LCEL",
+        checklist:["LLM + ChatModel — OpenAI, Anthropic, Groq","PromptTemplate — dynamic prompt construction","LLMChain — connect prompt to model","ConversationBufferMemory — remember chat history","RunnableSequence (LCEL) — modern chain syntax"],
+        note_ph:"",
+        code_ph:"from langchain_core.prompts import ChatPromptTemplate\nfrom langchain_groq import ChatGroq\n\nllm = ChatGroq(model='llama3-8b-8192')\nprompt = ChatPromptTemplate.from_template('Summarize: {text}')\nchain = prompt | llm\n"
+      },
+      { id:"p1_rag", days:"Day 45", name:"LangChain agents + tools + RAG + pgvector + streaming", tags:["py","ai"],
+        sub:"tools · AgentExecutor · RAG · pgvector · HNSW · streaming",
+        checklist:["Tools — functions the agent can call","AgentExecutor — run agent with tools","RAG — retrieve relevant chunks, inject into prompt","pgvector — store and query embeddings","HNSW index — fast approximate nearest neighbor search","Streaming — stream LLM output token by token"],
+        note_ph:"Phase 1 done after this. Day 46 = project starts.",
+        code_ph:"from langchain_community.vectorstores import PGVector\nfrom langchain_community.embeddings import HuggingFaceEmbeddings\n\nembeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')\nvectorstore = PGVector(connection_string=DB_URL, embedding_function=embeddings)\n"
+      },
+    ]
+  },
+  {
+    phase: "Phase 2 — Build the Project", days: "Days 46–90",
+    topics: [
+      { id:"p2_setup", days:"Days 46–48", name:"Project setup", tags:["proj"],
+        sub:"FastAPI boilerplate · Docker + docker-compose · Supabase + Upstash · CI · Railway deploy",
+        checklist:["FastAPI boilerplate — proper folder structure","Docker + docker-compose — FastAPI + PG + Redis locally","Supabase PostgreSQL connected — async SQLAlchemy engine","Upstash Redis connected — caching + job queue","GitHub repo — clean commits from day 1","GitHub Actions CI — run tests on every push","Railway deployment — backend live on first day"],
+        note_ph:"What broke during setup?",
+        code_ph:"# docker-compose.yml skeleton\nversion: '3.8'\nservices:\n  api:\n    build: .\n    ports:\n      - '8000:8000'\n  db:\n    image: postgres:15\n  redis:\n    image: redis:7\n"
+      },
+      { id:"p2_auth", days:"Days 49–51", name:"Auth system", tags:["proj"],
+        sub:"User model · register/login · JWT tokens · Redis blacklist · tests",
+        checklist:["User model — email, hashed_password, created_at, is_active","Register endpoint — validate email, hash password, create user","Login endpoint — verify password, return access + refresh tokens","Protected route middleware — validate JWT in Depends()","Refresh token endpoint","Logout — add token to Redis blacklist","Unit + integration tests for all auth endpoints"],
+        note_ph:"",
+        code_ph:"# auth/router.py\n@router.post('/register', response_model=UserOut)\nasync def register(data: UserCreate, db: AsyncSession = Depends(get_db)):\n    existing = await user_repo.get_by_email(db, data.email)\n    if existing:\n        raise HTTPException(400, 'Email already registered')\n    user = await user_repo.create(db, data)\n    return user\n"
+      },
+      { id:"p2_ingest", days:"Days 52–54", name:"Video ingestion", tags:["proj"],
+        sub:"POST /videos/process · yt-dlp · FFmpeg · Cloudflare R2 · Celery task · WebSocket progress",
+        checklist:["POST /videos/process — accept YouTube URL or file upload","yt-dlp integration — download audio from 1000+ platforms","FFmpeg — extract audio only, convert to wav","Cloudflare R2 — store audio file, return R2 URL","Celery task queued — return job_id immediately","WebSocket /jobs/{id}/progress — live progress updates","GET /jobs/{id}/status — poll job state"],
+        note_ph:"",
+        code_ph:"import yt_dlp\n\ndef download_audio(url: str, output_path: str):\n    ydl_opts = {\n        'format': 'bestaudio/best',\n        'outtmpl': output_path,\n        'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav'}]\n    }\n    with yt_dlp.YoutubeDL(ydl_opts) as ydl:\n        ydl.download([url])\n"
+      },
+      { id:"p2_trans", days:"Days 55–57", name:"Transcription pipeline", tags:["proj","ai"],
+        sub:"faster-whisper · language auto-detection · word timestamps · WebSocket streaming",
+        checklist:["faster-whisper — transcribe audio in Celery background task","Language auto-detection — no input needed from user","Timestamp alignment — word-level and segment-level","Store transcript in PostgreSQL with metadata","WebSocket — stream progress as segments complete","Error handling — corrupted audio, unsupported format, timeout"],
+        note_ph:"",
+        code_ph:"from faster_whisper import WhisperModel\n\nmodel = WhisperModel('base', device='cpu', compute_type='int8')\nsegments, info = model.transcribe('audio.wav', word_timestamps=True)\nfor segment in segments:\n    print(f'[{segment.start:.2f}s] {segment.text}')\n"
+      },
+      { id:"p2_translate", days:"Days 58–60", name:"Translation + AI processing", tags:["proj","ai"],
+        sub:"99-language translation · LangChain summarization · auto chapters · KeyBERT keywords",
+        checklist:["GET /videos/{id}/transcript/translate?lang=hi","LangChain translation chain — Groq API (free tier)","Cache translated transcripts — Redis + PostgreSQL","LangChain summarization chain — short + detailed summary","Auto chapter detection — split by topic shifts","KeyBERT — extract domain-specific keywords"],
+        note_ph:"",
+        code_ph:"from keybert import KeyBERT\n\nkw_model = KeyBERT()\nkeywords = kw_model.extract_keywords(transcript, keyphrase_ngram_range=(1,2), top_n=10)\n"
+      },
+      { id:"p2_rag", days:"Days 61–63", name:"RAG pipeline", tags:["proj","ai"],
+        sub:"500-token chunks · sentence-transformers · pgvector HNSW · LangChain RAG chain",
+        checklist:["Transcript chunking — 500-token overlapping chunks","sentence-transformers — generate embeddings for each chunk","pgvector storage — store embeddings with HNSW index","Semantic search — find relevant chunks for any query","LangChain RAG chain — inject context into LLM prompt"],
+        note_ph:"",
+        code_ph:"from langchain_text_splitters import RecursiveCharacterTextSplitter\n\nsplitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)\nchunks = splitter.split_text(transcript)\n"
+      },
+      { id:"p2_chat", days:"Days 64–66", name:"Chat with video", tags:["proj","ai"],
+        sub:"POST /videos/{id}/chat · Redis conversation history · WebSocket token streaming · source citations",
+        checklist:["POST /videos/{id}/chat — ask any question about video","Conversation history — stored in Redis per session","Streaming response — WebSocket streams tokens as they arrive","Source citations — which part of video answered the question","GET /videos/{id}/chat/history — full conversation"],
+        note_ph:"",
+        code_ph:"@router.websocket('/videos/{video_id}/chat/stream')\nasync def chat_stream(websocket: WebSocket, video_id: str):\n    await websocket.accept()\n    query = await websocket.receive_text()\n    async for token in rag_chain.astream({'question': query}):\n        await websocket.send_text(token)\n"
+      },
+      { id:"p2_ml", days:"Days 67–69", name:"ML layer — diarization + topic modeling", tags:["proj","ai"],
+        sub:"pyannote-audio · BERTopic · speaker labels · topic timeline",
+        checklist:["pyannote-audio — speaker diarization (who said what when)","BERTopic — topic modeling across transcript","Merge diarization with transcript — each line has speaker label","Topic timeline — when was each topic discussed","All ML runs in Celery — does not block API responses"],
+        note_ph:"",
+        code_ph:"from pyannote.audio import Pipeline\n\npipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1')\ndiarization = pipeline('audio.wav')\nfor turn, _, speaker in diarization.itertracks(yield_label=True):\n    print(f'{speaker}: {turn.start:.1f}s --> {turn.end:.1f}s')\n"
+      },
+      { id:"p2_export", days:"Days 70–72", name:"Export system + Analytics", tags:["proj"],
+        sub:"SRT · PDF transcript · AI blog post · /analytics/usage · admin endpoints",
+        checklist:["GET /videos/{id}/export?format=srt — SubRip subtitle file","GET /videos/{id}/export?format=pdf — formatted PDF transcript","GET /videos/{id}/export?format=blog — AI-generated blog post","GET /analytics/usage — videos processed, languages, topics","Admin endpoints — user management, system stats, job queue"],
+        note_ph:"",
+        code_ph:"def generate_srt(segments: list) -> str:\n    lines = []\n    for i, seg in enumerate(segments, 1):\n        start = format_timestamp(seg.start)\n        end = format_timestamp(seg.end)\n        lines.append(f'{i}\\n{start} --> {end}\\n{seg.text.strip()}\\n')\n    return '\\n'.join(lines)\n"
+      },
+      { id:"p2_perf", days:"Days 73–75", name:"Performance + production hardening", tags:["proj"],
+        sub:"Redis caching · EXPLAIN ANALYZE · rate limiting · structured logging · gzip",
+        checklist:["Redis caching — cache summaries, chapters, keywords (TTL 24hrs)","Connection pooling — SQLAlchemy pool_size tuned","N+1 prevention — check all queries with EXPLAIN ANALYZE","Rate limiting — 100 req/min per user, 10 video/day free tier","Structured JSON logging — request ID, user ID, duration on every request","Gzip compression middleware"],
+        note_ph:"",
+        code_ph:"from fastapi.middleware.gzip import GZipMiddleware\napp.add_middleware(GZipMiddleware, minimum_size=1000)\n"
+      },
+      { id:"p2_test", days:"Days 76–78", name:"Testing — unit + integration + load", tags:["proj"],
+        sub:"unit tests · integration tests · 80%+ coverage · Locust 100 concurrent users",
+        checklist:["Unit tests — services layer (mock DB, mock LLM)","Integration tests — real DB, real Redis, mock external APIs","pytest-asyncio — test all async routes","Coverage — 80%+ across all modules","Locust load test — simulate 100 concurrent users"],
+        note_ph:"",
+        code_ph:"# locustfile.py\nfrom locust import HttpUser, task\n\nclass VideoUser(HttpUser):\n    @task\n    def process_video(self):\n        self.client.post('/videos/process', json={'url': 'https://youtube.com/watch?v=...'})\n"
+      },
+      { id:"p2_fe", days:"Days 79–81", name:"Frontend — Next.js 14 + shadcn/ui", tags:["proj"],
+        sub:"App Router · dark theme dashboard · WebSocket client · chat UI · export buttons",
+        checklist:["Next.js 14 + TypeScript — App Router","shadcn/ui — dark theme dashboard","Paste URL or upload file — single input, magic happens","WebSocket client — show live transcription progress","Chat interface — talk to your video","Export buttons — download SRT, PDF, blog"],
+        note_ph:"Keep it simple — shadcn/ui template does 80% of the work.",
+        code_ph:"// app/page.tsx\n'use client'\nimport { useState } from 'react'\n\nexport default function Home() {\n  const [url, setUrl] = useState('')\n  const [jobId, setJobId] = useState(null)\n  \n  const processVideo = async () => {\n    const res = await fetch('/api/videos/process', {\n      method: 'POST',\n      body: JSON.stringify({ url })\n    })\n    const { job_id } = await res.json()\n    setJobId(job_id)\n  }\n}"
+      },
+      { id:"p2_deploy", days:"Days 82–84", name:"Deployment — Railway + Vercel + R2", tags:["proj"],
+        sub:"Railway · Vercel · Supabase prod · Cloudflare R2 · GitHub Actions CI/CD · custom domain",
+        checklist:["Railway — FastAPI + Celery worker deployed","Vercel — Next.js frontend deployed","Supabase — production PostgreSQL + pgvector","Cloudflare R2 — production file storage","GitHub Actions — full CI/CD pipeline","Custom domain — using .is-a.dev free subdomain","SSL — HTTPS on everything"],
+        note_ph:"",
+        code_ph:"# railway.toml\n[build]\nbuilder = 'nixpacks'\n\n[deploy]\nstartCommand = 'uvicorn app.main:app --host 0.0.0.0 --port $PORT'\nhealthcheckPath = '/health'\n"
+      },
+      { id:"p2_polish", days:"Days 85–90", name:"Polish — docs + README + demo", tags:["proj"],
+        sub:"Swagger docs · architecture diagram · demo video · clean GitHub · portfolio update",
+        checklist:["Swagger docs — every endpoint documented with examples","README — architecture diagram, setup guide, demo screenshots","Demo video — 3 min screen recording showing key features","GitHub cleanup — meaningful commit messages, clean history","Portfolio website — update with project"],
+        note_ph:"Phase 2 complete. You have a live, deployed AI product.",
+        code_ph:"# README.md structure\n# Video Intelligence Platform\n## Architecture\n## Tech Stack\n## Local Setup\n## API Docs\n## Demo\n"
+      },
+    ]
+  },
+  {
+    phase: "Phase 3 — Apply + First Offer", days: "Days 91–100",
+    topics: [
+      { id:"p3_resume", days:"Day 91", name:"Resume + LinkedIn", tags:["proj"],
+        sub:"1-page ATS resume · RAG/LangChain/pgvector highlights · LinkedIn update",
+        checklist:["1 page, ATS-friendly, highlight RAG/LangChain/pgvector/FastAPI","Frame past experience: 'Built production RAG pipelines using LangChain and pgvector'","Project section — Video Intelligence Platform with live link, GitHub link","LinkedIn — match resume, add project, add skills, connect with engineers at target companies"],
+        note_ph:"",
+        code_ph:"# Resume bullets\n# - Built production RAG pipeline (LangChain + pgvector) processing 500+ hours of video\n# - Designed async FastAPI backend with Celery task queue, Redis caching, PostgreSQL\n# - Implemented speaker diarization and BERTopic topic modeling on transcripts\n"
+      },
+      { id:"p3_github", days:"Day 92", name:"GitHub + Portfolio", tags:["proj"],
+        sub:"GitHub profile README · project README · Swagger docs link · portfolio update",
+        checklist:["GitHub profile README — introduction, skills, projects","Project README — architecture diagram, setup guide, features, demo GIF","Swagger docs link — live API documentation","Portfolio website — update with new project, clean design","Pin repositories — Video Intelligence + any other strong projects"],
+        note_ph:"",
+        code_ph:""
+      },
+      { id:"p3_sd", days:"Days 93–94", name:"System design study", tags:["proj"],
+        sub:"video transcription service · rate limiter · RAG pipeline · chat system · cold outreach",
+        checklist:["Design a video transcription service — your project is the answer","Design a rate limiter — Redis sliding window","Design a URL shortener — hashing, redirects, analytics","Design a RAG pipeline — chunking, embedding, retrieval, reranking","Design a chat system — WebSockets, message history, presence","Cold outreach — LinkedIn message to 5 engineers at Sarvam AI / Krutrim"],
+        note_ph:"Note the key talking points for each design question.",
+        code_ph:"# Rate limiter — Redis sliding window\nimport time\nimport redis\n\ndef is_allowed(user_id: str, limit: int = 100, window: int = 60) -> bool:\n    now = time.time()\n    key = f'rate:{user_id}'\n    pipe = r.pipeline()\n    pipe.zremrangebyscore(key, 0, now - window)\n    pipe.zadd(key, {now: now})\n    pipe.zcard(key)\n    pipe.expire(key, window)\n    results = pipe.execute()\n    return results[2] <= limit\n"
+      },
+      { id:"p3_mock1", days:"Days 95–96", name:"Mock interviews — Python + FastAPI + AI/ML", tags:["proj"],
+        sub:"Python internals · async · OOP · dependency injection · LangChain · RAG · speaker diarization",
+        checklist:["Mock: Python internals, async, OOP, decorators, generators","Mock: FastAPI DI, middleware, background tasks","Mock: LangChain, RAG pipeline, pgvector internals","Mock: AI/ML pipeline — Whisper, diarization, BERTopic","Mock: system design — design your project from scratch in 45 min","Apply: Sarvam AI + Krutrim + Postman + Razorpay"],
+        note_ph:"Note weak answers here. Come back and fix them.",
+        code_ph:"# Common interview question: explain event loop\nimport asyncio\n\n# The event loop runs coroutines one at a time\n# await yields control back to the loop\n# loop picks up next ready coroutine\n\nasync def task_a():\n    print('A start')\n    await asyncio.sleep(1)  # gives up control here\n    print('A end')\n\nasync def task_b():\n    print('B start')\n    await asyncio.sleep(0.5)\n    print('B end')\n\nasyncio.run(asyncio.gather(task_a(), task_b()))\n# Output: A start → B start → B end → A end\n"
+      },
+      { id:"p3_mock2", days:"Day 97", name:"Mock interview — SQL + behavioral", tags:["proj"],
+        sub:"SQL schema design · query optimization · behavioral stories · past experience",
+        checklist:["Mock: SQL — database design, query optimization","Mock: behavioral — past experience stories","DSA revision — DP + graphs","Apply: CRED + Zerodha"],
+        note_ph:"Write your gap story here. Practice it until it sounds natural.",
+        code_ph:"-- Common interview SQL: second highest salary\nSELECT MAX(salary) AS second_highest\nFROM employees\nWHERE salary < (SELECT MAX(salary) FROM employees);\n\n-- With window function\nSELECT salary FROM (\n    SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk\n    FROM employees\n) t WHERE rnk = 2;\n"
+      },
+      { id:"p3_demo", days:"Day 98", name:"Project demo practice", tags:["proj"],
+        sub:"5-min demo · record yourself · architecture explanation · scale questions",
+        checklist:["Practice 5-minute project demo — explain architecture, show live, explain every technical decision","Record yourself — watch back, fix weak explanations","Prepare: 'Why this tech stack?'","Prepare: 'How would you scale this?'","Prepare: 'What was hardest?'","Apply: 5 Series A AI startups (AngelList, LinkedIn Jobs)"],
+        note_ph:"Write your 5-minute script here.",
+        code_ph:""
+      },
+      { id:"p3_hr", days:"Day 99", name:"HR prep + Apply", tags:["proj"],
+        sub:"salary negotiation · gap explanation · company-specific answers · questions to ask",
+        checklist:["Salary: always open with ₹25 LPA — anchor high","Gap story: '18 months in production AI, now deepening Python/FastAPI expertise'","Why this company — prepare 3 specific reasons per company","Questions to ask interviewer — prepared list","Apply: remaining companies on target list"],
+        note_ph:"Write your salary negotiation script. Practice saying ₹25 LPA without hesitation.",
+        code_ph:""
+      },
+      { id:"p3_done", days:"Day 100", name:"Rest + Reflect", tags:[],
+        sub:"Full day off. 1,200 hours done. You are ready.",
+        checklist:["No coding today","No studying today","You have done 1,200 hours of focused work across 100 days","Python mastered. DSA cleared. SQL production-grade. Project live. Newton certified.","You are ready."],
+        note_ph:"Write down what you learned. Who you became.",
+        code_ph:""
+      },
+    ]
+  }
+];
+
+const DSA_TOPICS = [
+  { id:"dsa_1", days:"Days 1–9",   name:"Arrays + Strings",            problems:["Two Sum","Best Time to Buy and Sell Stock","Contains Duplicate","Valid Anagram","Valid Palindrome","Binary Search","Maximum Subarray (Kadane's)","Longest Substring Without Repeating","Sliding Window Maximum"] },
+  { id:"dsa_2", days:"Days 10–18", name:"Hashmaps + Two Pointers",      problems:["Group Anagrams","Top K Frequent Elements","Product of Array Except Self","Valid Sudoku","3Sum","Container With Most Water","Trapping Rain Water","Two Sum II","Longest Consecutive Sequence"] },
+  { id:"dsa_3", days:"Days 19–27", name:"Stack + Queue + Sliding Window",problems:["Valid Parentheses","Min Stack","Evaluate Reverse Polish Notation","Generate Parentheses","Daily Temperatures","Car Fleet","Largest Rectangle in Histogram","Minimum Window Substring","Permutation in String"] },
+  { id:"dsa_4", days:"Days 28–36", name:"Binary Search + Linked List",   problems:["Search in Rotated Sorted Array","Find Minimum in Rotated Array","Time Based Key-Value Store","Koko Eating Bananas","Reverse Linked List","Merge Two Sorted Lists","Reorder List","Remove Nth Node From End","Linked List Cycle"] },
+  { id:"dsa_5", days:"Days 37–45", name:"Trees basics",                  problems:["Invert Binary Tree","Maximum Depth","Diameter of Binary Tree","Balanced Binary Tree","Same Tree","Subtree of Another Tree","Level Order Traversal","Right Side View","Count Good Nodes"] },
+  { id:"dsa_6", days:"Days 46–54", name:"Trees advanced",                problems:["Validate BST","Kth Smallest in BST","Construct Tree from Preorder+Inorder","Serialize and Deserialize","Lowest Common Ancestor","Zigzag Level Order","Path Sum II","Maximum Path Sum","Word Search II"] },
+  { id:"dsa_7", days:"Days 55–63", name:"Graphs",                        problems:["Number of Islands","Clone Graph","Max Area of Island","Pacific Atlantic Water Flow","Surrounded Regions","Course Schedule","Course Schedule II","Number of Connected Components","Graph Valid Tree"] },
+  { id:"dsa_8", days:"Days 64–72", name:"Dynamic Programming",           problems:["Climbing Stairs","House Robber","House Robber II","Longest Palindromic Substring","Palindromic Substrings","Coin Change","Maximum Product Subarray","Word Break","Longest Common Subsequence"] },
+  { id:"dsa_9", days:"Days 73–81", name:"Heaps + Greedy",                problems:["Kth Largest in Stream","Last Stone Weight","K Closest Points","Kth Largest in Array","Task Scheduler","Design Twitter","Find Median from Data Stream","Jump Game","Jump Game II"] },
+  { id:"dsa_10",days:"Days 82–90", name:"Mixed Hard + Timed Contests",   problems:["10 mixed problems across all topics","Time yourself — 45 min per problem","After each: review optimal solution + time/space complexity","Mock LeetCode contest — simulate real interview pressure"] },
+];
+
+function load(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) { return null; }
+}
+function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+function getState(id) {
+  return load('state_' + id) || { done: false, note: '', code: '' };
+}
+function setState(id, patch) {
+  const s = getState(id);
+  save('state_' + id, { ...s, ...patch });
+}
+
+function getDsaState(id) {
+  return load('dsa_' + id) || {};
+}
+function setDsaState(id, problems) {
+  save('dsa_' + id, problems);
+}
+
+function countStats() {
+  let total = 0, done = 0;
+  DATA.forEach(ph => ph.topics.forEach(t => {
+    total++;
+    if (getState(t.id).done) done++;
+  }));
+  return { total, done };
+}
+
+function updateCounter() {
+  const { total, done } = countStats();
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('prog').style.width = Math.round(done / total * 100) + '%';
+}
+
+function tagHtml(tags) {
+  const map = { py:'tag-py', dsa:'tag-dsa', sql:'tag-sql', ai:'tag-ai', proj:'tag-proj' };
+  const labels = { py:'Python', dsa:'DSA', sql:'SQL', ai:'AI/ML', proj:'Project' };
+  return tags.map(t => `<span class="track-tag ${map[t]||''}">${labels[t]||t}</span>`).join('');
+}
+
+function renderTopic(t) {
+  const s = getState(t.id);
+  const doneClass = s.done ? ' done' : '';
+  const checklistHtml = t.checklist.map(c => `<li>${c}</li>`).join('');
+  return `
+  <div class="topic-block${doneClass}" id="block_${t.id}">
+    <div class="topic-row" onclick="toggleTopic('${t.id}')">
+      <div class="tick-btn" onclick="event.stopPropagation(); toggleDone('${t.id}')">
+        <span class="tick-icon">✓</span>
+      </div>
+      <div class="topic-info">
+        <div class="topic-days">${t.days} ${tagHtml(t.tags)}</div>
+        <div class="topic-name">${t.name}</div>
+        <div class="topic-sub">${t.sub}</div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="topic-detail">
+      <div class="checklist">
+        <div class="checklist-title">What to cover</div>
+        <ul>${checklistHtml}</ul>
+      </div>
+      <div class="notes-area">
+        <div class="notes-label">Notes — what's missing / what confused you</div>
+        <textarea class="notes-box" id="note_${t.id}" placeholder="${t.note_ph || 'Add notes here…'}" oninput="autoSave('${t.id}')">${s.note}</textarea>
+      </div>
+      ${t.code_ph !== '' || s.code ? `
+      <div class="code-area">
+        <div class="code-label">Your code for this topic</div>
+        <textarea class="code-box" id="code_${t.id}" placeholder="${t.code_ph || '# Write your code here…'}" oninput="autoSave('${t.id}')">${s.code}</textarea>
+      </div>` : ''}
+      <div class="save-row">
+        <button class="save-btn" id="savebtn_${t.id}" onclick="saveNote('${t.id}')">save</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDSA(t) {
+  const dsaState = getDsaState(t.id);
+  const problemsHtml = t.problems.map((p, i) => {
+    const checked = dsaState[i] ? ' checked' : '';
+    return `<li>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox"${checked} onchange="toggleDsaProblem('${t.id}',${i},this.checked)" style="accent-color:#16a34a;width:14px;height:14px;flex-shrink:0">
+        <span style="font-size:13px;color:#333">${p}</span>
+      </label>
+    </li>`;
+  }).join('');
+  const done = t.problems.filter((_, i) => dsaState[i]).length;
+  return `
+  <div class="topic-block" id="dsa_block_${t.id}" style="margin-bottom:2px">
+    <div class="topic-row" onclick="toggleDsaTopic('${t.id}')">
+      <div class="topic-info">
+        <div class="topic-days">${t.days} <span class="track-tag tag-dsa">DSA</span></div>
+        <div class="topic-name">${t.name}</div>
+        <div class="topic-sub" style="color:#16a34a;font-size:12px">${done} / ${t.problems.length} solved</div>
+      </div>
+      <span class="expand-arrow" id="dsa_arrow_${t.id}">▼</span>
+    </div>
+    <div class="topic-detail" id="dsa_detail_${t.id}">
+      <div class="checklist">
+        <div class="checklist-title">Problems</div>
+        <ul style="list-style:none">${problemsHtml}</ul>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTopic(id) {
+  const block = document.getElementById('block_' + id);
+  block.classList.toggle('open');
+}
+
+function toggleDsaTopic(id) {
+  const detail = document.getElementById('dsa_detail_' + id);
+  const arrow = document.getElementById('dsa_arrow_' + id);
+  const open = detail.style.display === 'block';
+  detail.style.display = open ? 'none' : 'block';
+  arrow.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function toggleDone(id) {
+  const s = getState(id);
+  setState(id, { done: !s.done });
+  const block = document.getElementById('block_' + id);
+  block.classList.toggle('done', !s.done);
+  updateCounter();
+}
+
+function toggleDsaProblem(topicId, idx, checked) {
+  const s = getDsaState(topicId);
+  s[idx] = checked;
+  setDsaState(topicId, s);
+  // update counter text
+  const block = document.getElementById('dsa_block_' + topicId);
+  const topic = DSA_TOPICS.find(t => t.id === topicId);
+  const done = topic.problems.filter((_, i) => s[i]).length;
+  block.querySelector('.topic-sub').textContent = done + ' / ' + topic.problems.length + ' solved';
+}
+
+let saveTimers = {};
+function autoSave(id) {
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(() => saveNote(id, true), 1500);
+}
+
+function saveNote(id, silent) {
+  const noteEl = document.getElementById('note_' + id);
+  const codeEl = document.getElementById('code_' + id);
+  setState(id, {
+    note: noteEl ? noteEl.value : getState(id).note,
+    code: codeEl ? codeEl.value : getState(id).code
+  });
+  if (!silent) {
+    const btn = document.getElementById('savebtn_' + id);
+    btn.textContent = 'saved ✓';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = 'save'; btn.classList.remove('saved'); }, 1500);
+  }
+}
+
+function buildApp() {
+  const app = document.getElementById('app');
+  let html = '';
+
+  DATA.forEach(phase => {
+    html += `<div class="phase-block">
+      <div class="phase-label">${phase.days}</div>
+      <div class="phase-title">${phase.phase}</div>`;
+
+    // If phase 1, interleave DSA blocks by day range
+    if (phase.phase.includes('Foundation')) {
+      phase.topics.forEach(t => { html += renderTopic(t); });
+      html += `<div style="margin-top:32px"><div class="phase-label">DSA Track — 2 hrs/day</div><div class="phase-title" style="font-size:15px;border-width:1px">LeetCode Problems — 45+ in Phase 1</div>`;
+      DSA_TOPICS.slice(0, 5).forEach(t => { html += renderDSA(t); });
+      html += `</div>`;
+    } else if (phase.phase.includes('Build')) {
+      phase.topics.forEach(t => { html += renderTopic(t); });
+      html += `<div style="margin-top:32px"><div class="phase-label">DSA Track — continued</div><div class="phase-title" style="font-size:15px;border-width:1px">LeetCode Problems — 90+ in Phase 2</div>`;
+      DSA_TOPICS.slice(5).forEach(t => { html += renderDSA(t); });
+      html += `</div>`;
+    } else {
+      phase.topics.forEach(t => { html += renderTopic(t); });
+    }
+
+    html += `</div>`;
+  });
+
+  app.innerHTML = html;
+  updateCounter();
+}
+
+buildApp();
+</script>
+</body>
+</html>
